@@ -2,6 +2,7 @@ package com.example.events;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -46,8 +47,15 @@ public class EventController {
 		
 		Event event = modelMapper.map(eventDto, Event.class);
 		Event newEvent = eventRepository.save(event);
-		URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-		return ResponseEntity.created(createdUri).body(newEvent);
+		ControllerLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+		URI createdUri = selfLinkBuilder.toUri();
+		
+		EventResource eventResource = new EventResource(event);
+		eventResource.add(selfLinkBuilder.withRel("query-events"));
+//		eventResource.add(selfLinkBuilder.withSelfRel()); eventResource를 만들 때  생성자로 추가함.
+		eventResource.add(selfLinkBuilder.withRel("update-event"));
+		
+		return ResponseEntity.created(createdUri).body(eventResource);
 	}
 	
 }
