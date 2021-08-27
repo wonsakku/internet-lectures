@@ -6,6 +6,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+
 
 import java.time.LocalDateTime;
 
@@ -20,12 +30,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.hypermedia.LinksSnippet;
+import org.springframework.restdocs.payload.RequestFieldsSnippet;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.session.HeaderWebSessionIdResolver;
 
 import com.example.common.RestDocsConfiguration;
 import com.example.common.TestDescription;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.qos.logback.core.util.ContentTypeUtil;
 
 @RunWith(SpringRunner.class)
 //@WebMvcTest
@@ -49,7 +64,6 @@ public class EventControllerTests {
 	@Test
 	@TestDescription("정상적으로 이벤트를 생성하는 테스트")
 	public void createEvent() throws Exception {
-		
 		EventDto event = EventDto.builder()
 				.name("Spring")
 				.description("RESTAPI Development")
@@ -81,7 +95,54 @@ public class EventControllerTests {
 			.andExpect(jsonPath("_links.self").exists())
 			.andExpect(jsonPath("_links.query-events").exists())
 			.andExpect(jsonPath("_links.update-event").exists())
-			.andDo(document("create-event"))
+			.andDo(document("create-event",
+							links(
+								linkWithRel("self").description("link to self"),
+								linkWithRel("query-events").description("link to query events"),
+								linkWithRel("update-event").description("link to update an existing event")
+							),
+							requestHeaders(
+								headerWithName(HttpHeaders.ACCEPT).description("aceept header"),
+								headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
+							),
+							requestFields(
+								fieldWithPath("name").description("Name of new Event"),
+								fieldWithPath("description").description("description of new Event"),
+								fieldWithPath("beginEnrollmentDateTime").description("beginEnrollmentDateTime of new Event"),
+								fieldWithPath("closeEnrollmentDateTime").description("closeEnrollmentDateTime of new Event"),
+								fieldWithPath("beginEventDateTime").description("beginEventDateTime of new Event"),
+								fieldWithPath("endEventDateTime").description("endEventDateTime of new Event"),
+								fieldWithPath("location").description("location of new Event"),
+								fieldWithPath("basePrice").description("basePrice of new Event"),
+								fieldWithPath("maxPrice").description("maxPrice of new Event"),
+								fieldWithPath("limitOfEnrollment").description("limitOfEnrollment of new Event")
+							),
+							responseHeaders(
+								headerWithName(HttpHeaders.LOCATION).description("Location header"),
+								headerWithName(HttpHeaders.CONTENT_TYPE).description("Content type")
+							),
+//							relaxedResponseFields(
+							responseFields(
+								fieldWithPath("id").description("Id of new Event"),
+								fieldWithPath("name").description("Name of new Event"),
+								fieldWithPath("description").description("description of new Event"),
+								fieldWithPath("beginEnrollmentDateTime").description("beginEnrollmentDateTime of new Event"),
+								fieldWithPath("closeEnrollmentDateTime").description("closeEnrollmentDateTime of new Event"),
+								fieldWithPath("beginEventDateTime").description("beginEventDateTime of new Event"),
+								fieldWithPath("endEventDateTime").description("endEventDateTime of new Event"),
+								fieldWithPath("location").description("location of new Event"),
+								fieldWithPath("basePrice").description("basePrice of new Event"),
+								fieldWithPath("maxPrice").description("maxPrice of new Event"),
+								fieldWithPath("limitOfEnrollment").description("limitOfEnrollment of new Event"),
+								fieldWithPath("free").description("it tells if this event is free or not"),
+								fieldWithPath("offline").description("it tells if this event is offline or not"),
+								fieldWithPath("eventStatus").description("eventStatus"),
+								fieldWithPath("_links.self.href").description("link to self"),
+								fieldWithPath("_links.query-events.href").description("link to query event"),
+								fieldWithPath("_links.update-event.href").description("link to update event")
+							)
+						)
+				)
 			;
 	}
 	
