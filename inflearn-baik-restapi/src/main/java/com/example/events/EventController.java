@@ -1,11 +1,18 @@
 package com.example.events;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -63,7 +70,16 @@ public class EventController {
 		return ResponseEntity.created(createdUri).body(eventResource);
 	}
 
-
+	
+	@GetMapping
+	public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler) {
+		
+		Page<Event> page = this.eventRepository.findAll(pageable);
+//		PagedResources<Resource<Event>> resoures = assembler.toResource(page);
+		PagedResources<Resource<Event>> resoures = assembler.toResource(page, e -> new EventResource(e));
+		resoures.add(new Link("/docs/index.html#resourcces-events-list").withRel("profile"));
+		return ResponseEntity.status(HttpStatus.OK).body(resoures);
+	}
 
 	private ResponseEntity<ErrorResource> badRequest(Errors errors) {
 		return ResponseEntity.badRequest().body(new ErrorResource(errors));
