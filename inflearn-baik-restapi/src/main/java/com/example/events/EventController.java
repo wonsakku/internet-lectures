@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -77,8 +79,21 @@ public class EventController {
 		Page<Event> page = this.eventRepository.findAll(pageable);
 //		PagedResources<Resource<Event>> resoures = assembler.toResource(page);
 		PagedResources<Resource<Event>> resoures = assembler.toResource(page, e -> new EventResource(e));
-		resoures.add(new Link("/docs/index.html#resourcces-events-list").withRel("profile"));
+		resoures.add(new Link("/docs/index.html#resources-events-list").withRel("profile"));
 		return ResponseEntity.status(HttpStatus.OK).body(resoures);
+	}
+	
+	
+	@GetMapping("/{id}")
+	public ResponseEntity getEvent(@PathVariable Integer id) {
+		Optional<Event> optionalEvent = this.eventRepository.findById(id);
+		if(optionalEvent.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+		Event event = optionalEvent.get();
+		EventResource eventResourse = new EventResource(event);
+		eventResourse.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
+		return ResponseEntity.ok(eventResourse);
 	}
 
 	private ResponseEntity<ErrorResource> badRequest(Errors errors) {

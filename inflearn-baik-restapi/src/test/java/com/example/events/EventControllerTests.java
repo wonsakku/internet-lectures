@@ -37,6 +37,7 @@ import org.springframework.restdocs.payload.RequestFieldsSnippet;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.server.session.HeaderWebSessionIdResolver;
 
 import com.example.common.RestDocsConfiguration;
@@ -253,40 +254,70 @@ public class EventControllerTests {
 	@Test
 	@TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
 	public void queryEvents() throws Exception{
+		
+		
 		//given
+		IntStream.range(0, 30).forEach(this::generateEvent);
 //		IntStream.range(0, 30).forEach(i ->{
 //			this.generateEvent(i);
 //		});
-		IntStream.range(0, 30).forEach(this::generateEvent);
+		
+		
 		//when
-		this.mockMvc.perform(get("/api/events")
+		ResultActions perform = this.mockMvc.perform(get("/api/events")
 					.param("page", "1") // paging할 때 0이 1번째 , 1이 2번째
 					.param("size", "10")
 					.param("sort", "name,DESC")
-				)
-			.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("page").exists())
-			.andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
-			.andExpect(jsonPath("_links.self").exists())
-			.andExpect(jsonPath("_links.profile").exists())
-			.andDo(document("query-events"))
-			;
+				);
 		
-		//then
+		
+		// then
+		perform.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("page").exists())
+				.andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+				.andExpect(jsonPath("_links.self").exists())
+				.andExpect(jsonPath("_links.profile").exists())
+				.andDo(document("query-events"))
+				;
 	}
-
-
-	private void generateEvent(int i) {
+	
+	private Event generateEvent(int i) {
 
 		Event event = Event.builder()
 				.name("event_" + i)
 				.description("test event")
 				.build();
 		this.eventRepository.save(event);
+		
+		return event;
+	}
+
+	
+	@Test
+	@TestDescription("기존의 이벤트를 하나 조회하기")
+	public void getEvent() throws Exception {
+		//given
+		Event event = this.generateEvent(100);
+		
+		//when & then
+		this.mockMvc.perform(get("/api/events/{id}", event.getId()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("name").exists())
+			.andExpect(jsonPath("id").exists())
+			.andExpect(jsonPath("_links.self").exists())
+			.andExpect(jsonPath("_links.profile").exists())
+			.andDo(document("get-an-event"))
+			;
 	}
 	
-	
+	@Test
+	@TestDescription("없는 이벤트를 조회했을 때 404 응답받기")
+	public void getEvent404() throws Exception{
+		this.mockMvc.perform(get("/api/events/123123"))
+			.andExpect(status().isNotFound())
+			;
+	}
 
 	
 }
