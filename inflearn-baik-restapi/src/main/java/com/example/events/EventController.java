@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.common.ErrorResource;
+
 import lombok.RequiredArgsConstructor;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -37,12 +39,13 @@ public class EventController {
 	public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors){
 	
 		if(errors.hasErrors()) {
-			return ResponseEntity.badRequest().body(errors);
+//			return ResponseEntity.badRequest().body(errors);
+			return badRequest(errors);
 		}
 		
 		eventValidator.validate(eventDto, errors);
 		if(errors.hasErrors()) {
-			return ResponseEntity.badRequest().body(errors);
+			return badRequest(errors);
 		}
 		
 		
@@ -58,6 +61,12 @@ public class EventController {
 		eventResource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
 		
 		return ResponseEntity.created(createdUri).body(eventResource);
+	}
+
+
+
+	private ResponseEntity<ErrorResource> badRequest(Errors errors) {
+		return ResponseEntity.badRequest().body(new ErrorResource(errors));
 	}
 	
 }

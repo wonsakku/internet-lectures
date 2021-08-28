@@ -233,9 +233,13 @@ public class EventControllerTests {
 				)
 		
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$[0].objectName").exists()) // $[0] -> 배열
-		.andExpect(jsonPath("$[0].defaultMessage").exists())
-		.andExpect(jsonPath("$[0].code").exists())
+		.andExpect(jsonPath("content[0].objectName").exists()) // $[0] -> 배열
+		.andExpect(jsonPath("content[0].defaultMessage").exists())
+		.andExpect(jsonPath("content[0].code").exists())
+		.andExpect(jsonPath("_links.index").exists())
+//		.andExpect(jsonPath("$[0].objectName").exists()) // $[0] -> 배열
+//		.andExpect(jsonPath("$[0].defaultMessage").exists())
+//		.andExpect(jsonPath("$[0].code").exists())
 //		.andExpect(jsonPath("$[0].field").exists())
 //		.andExpect(jsonPath("$[0].rejectedValue").exists())
 		.andDo(print())
