@@ -16,29 +16,18 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.common.BaseControllerTest;
 import com.example.common.RestDocsConfiguration;
 
-@RunWith(SpringRunner.class)
-//@WebMvcTest
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class IndexControllerTest {
-
-	@Autowired
-	MockMvc mockMvc;
+public class IndexControllerTest extends BaseControllerTest{
 
 	@Test
 	public void index() throws Exception {
 		this.mockMvc.perform(get("/api/"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("_links.events").exists())
-			
 			;
 	}
-	
 	
 }
 
