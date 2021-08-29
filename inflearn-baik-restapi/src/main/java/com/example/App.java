@@ -13,8 +13,4 @@ public class App {
 	}
 
 	
-	@Bean
-	public ModelMapper modelMapper() {
-		return new ModelMapper();
-	}
 }
