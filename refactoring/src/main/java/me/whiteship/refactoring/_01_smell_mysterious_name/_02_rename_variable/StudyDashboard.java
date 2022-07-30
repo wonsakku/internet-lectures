@@ -25,10 +25,11 @@ public class StudyDashboard {
         GHRepository repository = gitHub.getRepository("whiteship/live-study");
         GHIssue issue = repository.getIssue(30);
 
-        List<GHIssueComment> comments = issue.getComments();
-        for (GHIssueComment comment : comments) {
-            usernames.add(comment.getUserName());
-            this.reviews.add(comment.getBody());
+        // 메서드명이 loadReviews인데 review가 없기 때문에 변수명을 comments 에서 reviews로 변경
+        List<GHIssueComment> reviews = issue.getComments();
+        for (GHIssueComment review : reviews) {
+            usernames.add(review.getUserName());
+            this.reviews.add(review.getBody());
         }
     }
 
@@ -43,7 +44,7 @@ public class StudyDashboard {
     public static void main(String[] args) throws IOException {
         StudyDashboard studyDashboard = new StudyDashboard();
         studyDashboard.loadReviews();
-        studyDashboard.getUsernames().forEach(name -> System.out.println(name));
-        studyDashboard.getReviews().forEach(review -> System.out.println(review));
+        studyDashboard.getUsernames().forEach(System.out::println);
+        studyDashboard.getReviews().forEach(System.out::println);
     }
 }
